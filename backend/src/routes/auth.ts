@@ -1,4 +1,4 @@
-import express from 'express';
+import express, { Request, Response } from 'express';
 import { body, validationResult } from 'express-validator';
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
@@ -11,7 +11,7 @@ const router = express.Router();
 
 // Email transporter setup
 const createTransporter = () => {
-    return nodemailer.createTransporter({
+    return nodemailer.createTransport({
         host: process.env.EMAIL_HOST,
         port: parseInt(process.env.EMAIL_PORT || '587'),
         secure: false,
@@ -25,7 +25,7 @@ const createTransporter = () => {
 // Generate JWT token
 const generateToken = (userId: string) => {
     return jwt.sign({ userId }, process.env.JWT_SECRET!, {
-        expiresIn: process.env.JWT_EXPIRE || '7d',
+        expiresIn: '7d',
     });
 };
 
@@ -60,7 +60,7 @@ router.post('/register', [
     body('email').isEmail().normalizeEmail(),
     body('password').isLength({ min: 6 }),
     body('name').trim().isLength({ min: 2 }),
-], async (req, res) => {
+], async (req: Request, res: Response) => {
     try {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
@@ -98,7 +98,7 @@ router.post('/register', [
 
         res.status(201).json({
             message: 'User registered successfully. Please verify your email with the OTP sent.',
-            userId: user._id,
+            userId: user._id.toString(),
         });
     } catch (error) {
         console.error('Registration error:', error);
@@ -110,7 +110,7 @@ router.post('/register', [
 router.post('/verify-otp', [
     body('userId').notEmpty(),
     body('otp').isLength({ min: 6, max: 6 }),
-], async (req, res) => {
+], async (req: Request, res: Response) => {
     try {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
@@ -168,7 +168,7 @@ router.post('/verify-otp', [
 // Resend OTP
 router.post('/resend-otp', [
     body('userId').notEmpty(),
-], async (req, res) => {
+], async (req: Request, res: Response) => {
     try {
         const { userId } = req.body;
 
@@ -200,7 +200,7 @@ router.post('/resend-otp', [
 router.post('/login', [
     body('email').isEmail().normalizeEmail(),
     body('password').notEmpty(),
-], async (req, res) => {
+], async (req: Request, res: Response) => {
     try {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
@@ -240,7 +240,7 @@ router.post('/login', [
             return res.status(403).json({
                 error: 'Email not verified',
                 message: 'Please verify your email with the OTP sent.',
-                userId: user._id,
+                userId: user._id.toString(),
                 requiresVerification: true,
             });
         }
@@ -271,7 +271,7 @@ router.get('/google',
 
 router.get('/google/callback',
     passport.authenticate('google', { failureRedirect: `${process.env.FRONTEND_URL}/login?error=google_auth_failed` }),
-    (req, res) => {
+    (req: Request, res: Response) => {
         const user = req.user as any;
         const token = generateToken(user._id.toString());
 
@@ -281,12 +281,12 @@ router.get('/google/callback',
 );
 
 // Get current user
-router.get('/me', authenticate, async (req: AuthRequest, res) => {
+router.get('/me', authenticate, async (req: AuthRequest, res: Response) => {
     try {
         const user = req.user!;
         res.json({
             user: {
-                id: user._id,
+                id: user._id.toString(),
                 email: user.email,
                 name: user.name,
                 profilePicture: user.profilePicture,
@@ -303,7 +303,7 @@ router.get('/me', authenticate, async (req: AuthRequest, res) => {
 // Update profile
 router.put('/profile', authenticate, [
     body('name').optional().trim().isLength({ min: 2 }),
-], async (req: AuthRequest, res) => {
+], async (req: AuthRequest, res: Response) => {
     try {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
@@ -322,7 +322,7 @@ router.put('/profile', authenticate, [
         res.json({
             message: 'Profile updated successfully',
             user: {
-                id: user._id,
+                id: user._id.toString(),
                 email: user.email,
                 name: user.name,
                 profilePicture: user.profilePicture,
@@ -336,7 +336,7 @@ router.put('/profile', authenticate, [
 });
 
 // Logout (for Google OAuth session)
-router.post('/logout', (req, res) => {
+router.post('/logout', (req: Request, res: Response) => {
     req.logout((err) => {
         if (err) {
             return res.status(500).json({ error: 'Logout failed' });

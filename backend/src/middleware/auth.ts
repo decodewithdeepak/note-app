@@ -8,7 +8,7 @@ export interface AuthRequest extends Request {
 
 export const authenticate = async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
-        const token = req.header('Authorization')?.replace('Bearer ', '');
+        const token = req.get('Authorization')?.replace('Bearer ', '');
 
         if (!token) {
             return res.status(401).json({ error: 'Access denied. No token provided.' });
@@ -30,7 +30,7 @@ export const authenticate = async (req: AuthRequest, res: Response, next: NextFu
 
 export const optionalAuth = async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
-        const token = req.header('Authorization')?.replace('Bearer ', '');
+        const token = req.get('Authorization')?.replace('Bearer ', '');
 
         if (token) {
             const decoded = jwt.verify(token, process.env.JWT_SECRET!) as { userId: string };

@@ -1,12 +1,12 @@
 import passport from 'passport';
-import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
+import { Strategy as GoogleStrategy, Profile, VerifyCallback } from 'passport-google-oauth20';
 import User, { IUser } from '../models/User';
 
 passport.use(new GoogleStrategy({
     clientID: process.env.GOOGLE_CLIENT_ID!,
     clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
     callbackURL: process.env.GOOGLE_CALLBACK_URL!,
-}, async (accessToken, refreshToken, profile, done) => {
+}, async (accessToken: string, refreshToken: string, profile: Profile, done: VerifyCallback) => {
     try {
         // Check if user already exists with this Google ID
         let user = await User.findOne({ googleId: profile.id });
@@ -43,15 +43,15 @@ passport.use(new GoogleStrategy({
         await user.save();
         return done(null, user);
     } catch (error) {
-        return done(error, undefined);
+        return done(error as Error, undefined);
     }
 }));
 
-passport.serializeUser((user: any, done) => {
+passport.serializeUser((user: any, done: (err: any, id?: any) => void) => {
     done(null, user._id);
 });
 
-passport.deserializeUser(async (id: string, done) => {
+passport.deserializeUser(async (id: string, done: (err: any, user?: any) => void) => {
     try {
         const user = await User.findById(id);
         done(null, user);
