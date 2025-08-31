@@ -6,6 +6,7 @@ import rateLimit from 'express-rate-limit';
 import session from 'express-session';
 import passport from 'passport';
 import dotenv from 'dotenv';
+import path from 'path';
 
 import authRoutes from './routes/auth';
 import noteRoutes from './routes/notes';
@@ -52,6 +53,17 @@ app.use(passport.session());
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/notes', noteRoutes);
+
+// Serve static files from frontend build (for production)
+if (process.env.NODE_ENV === 'production') {
+    const frontendBuildPath = path.join(__dirname, 'public');
+    app.use(express.static(frontendBuildPath));
+
+    // Serve React app for all non-API routes
+    app.get('*', (req, res) => {
+        res.sendFile(path.join(frontendBuildPath, 'index.html'));
+    });
+}
 
 // Health check
 app.get('/health', (req, res) => {
