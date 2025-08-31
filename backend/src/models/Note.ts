@@ -5,8 +5,6 @@ export interface INote extends Document {
     content: string;
     user: mongoose.Types.ObjectId;
     tags: string[];
-    isPinned: boolean;
-    backgroundColor: string;
     createdAt: Date;
     updatedAt: Date;
 }
@@ -32,20 +30,11 @@ const noteSchema = new Schema<INote>({
         type: String,
         trim: true,
     }],
-    isPinned: {
-        type: Boolean,
-        default: false,
-    },
-    backgroundColor: {
-        type: String,
-        default: '#ffffff',
-    },
 }, {
     timestamps: true,
 });
 
 // Index for better performance
 noteSchema.index({ user: 1, createdAt: -1 });
-noteSchema.index({ user: 1, isPinned: -1, createdAt: -1 });
 
 export default mongoose.model<INote>('Note', noteSchema);

@@ -36,30 +36,39 @@ const generateOTP = () => {
 
 // Send OTP email
 const sendOTPEmail = async (email: string, otp: string) => {
-    // In development mode, just log the OTP instead of sending email
-    if (process.env.NODE_ENV === 'development') {
+    // Always log OTP in development mode or when email is not configured
+    const isEmailConfigured = process.env.EMAIL_HOST && process.env.EMAIL_USER && process.env.EMAIL_PASS;
+    
+    if (process.env.NODE_ENV !== 'production' || !isEmailConfigured) {
         console.log(`📧 [DEV MODE] OTP for ${email}: ${otp}`);
         console.log('🔥 [DEV MODE] Use this OTP to verify your account');
         return;
     }
 
-    const transporter = createTransporter();
+    try {
+        const transporter = createTransporter();
 
-    const mailOptions = {
-        from: process.env.EMAIL_USER,
-        to: email,
-        subject: 'Your OTP for Note App Verification',
-        html: `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-        <h2>Email Verification</h2>
-        <p>Your OTP code is: <strong style="font-size: 24px; color: #007bff;">${otp}</strong></p>
-        <p>This code will expire in 10 minutes.</p>
-        <p>If you didn't request this, please ignore this email.</p>
-      </div>
-    `,
-    };
+        const mailOptions = {
+            from: process.env.EMAIL_USER,
+            to: email,
+            subject: 'Your OTP for Note App Verification',
+            html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+            <h2>Email Verification</h2>
+            <p>Your OTP code is: <strong style="font-size: 24px; color: #007bff;">${otp}</strong></p>
+            <p>This code will expire in 10 minutes.</p>
+            <p>If you didn't request this, please ignore this email.</p>
+          </div>
+        `,
+        };
 
-    await transporter.sendMail(mailOptions);
+        await transporter.sendMail(mailOptions);
+    } catch (error) {
+        // If email fails, fall back to console logging
+        console.error('Email sending failed, falling back to console logging:', error.message);
+        console.log(`📧 [FALLBACK] OTP for ${email}: ${otp}`);
+        console.log('🔥 [FALLBACK] Use this OTP to verify your account');
+    }
 };
 
 // Register with email
@@ -277,13 +286,14 @@ router.get('/google',
 );
 
 router.get('/google/callback',
-    passport.authenticate('google', { failureRedirect: `${process.env.FRONTEND_URL}/login?error=google_auth_failed` }),
+    passport.authenticate('google', { failureRedirect: process.env.NODE_ENV === 'production' ? '/login?error=google_auth_failed' : 'http://localhost:5173/signin?error=google_auth_failed' }),
     (req: Request, res: Response) => {
         const user = req.user as any;
         const token = generateToken(user._id.toString());
 
         // Redirect to frontend with token
-        res.redirect(`${process.env.FRONTEND_URL}/auth/callback?token=${token}`);
+        const frontendUrl = process.env.NODE_ENV === 'production' ? '' : 'http://localhost:5173';
+        res.redirect(`${frontendUrl}/auth/callback?token=${token}`);
     }
 );
 

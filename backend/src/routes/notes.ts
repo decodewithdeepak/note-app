@@ -79,7 +79,6 @@ router.post('/', authenticate, [
     body('title').trim().isLength({ min: 1, max: 200 }).withMessage('Title is required and must be 1-200 characters'),
     body('content').trim().isLength({ min: 1, max: 10000 }).withMessage('Content is required and must be 1-10000 characters'),
     body('tags').optional().isArray(),
-    body('backgroundColor').optional().isHexColor(),
 ], async (req: any, res: any) => {
     try {
         const errors = validationResult(req);
@@ -91,13 +90,12 @@ router.post('/', authenticate, [
         }
 
         const user = req.user;
-        const { title, content, tags = [], backgroundColor = '#ffffff' } = req.body;
+        const { title, content, tags = [] } = req.body;
 
         const note = new Note({
             title,
             content,
             tags: Array.isArray(tags) ? tags.filter(tag => typeof tag === 'string' && tag.trim()) : [],
-            backgroundColor,
             user: user._id,
         });
 
@@ -119,8 +117,6 @@ router.put('/:id', authenticate, [
     body('title').optional().trim().isLength({ min: 1, max: 200 }),
     body('content').optional().trim().isLength({ min: 1, max: 10000 }),
     body('tags').optional().isArray(),
-    body('backgroundColor').optional().isHexColor(),
-    body('isPinned').optional().isBoolean(),
 ], async (req: any, res: any) => {
     try {
         const errors = validationResult(req);
@@ -132,7 +128,7 @@ router.put('/:id', authenticate, [
         }
 
         const user = req.user;
-        const { title, content, tags, backgroundColor, isPinned } = req.body;
+        const { title, content, tags } = req.body;
 
         const note = await Note.findOne({ _id: req.params.id, user: user._id });
 
@@ -145,8 +141,6 @@ router.put('/:id', authenticate, [
         if (tags !== undefined) {
             note.tags = Array.isArray(tags) ? tags.filter(tag => typeof tag === 'string' && tag.trim()) : [];
         }
-        if (backgroundColor !== undefined) note.backgroundColor = backgroundColor;
-        if (isPinned !== undefined) note.isPinned = isPinned;
 
         await note.save();
 
@@ -187,46 +181,12 @@ router.delete('/:id', authenticate, [
     }
 });
 
-// Pin/Unpin note
-router.patch('/:id/pin', authenticate, [
-    param('id').isMongoId().withMessage('Invalid note ID'),
-], async (req: any, res: any) => {
-    try {
-        const errors = validationResult(req);
-        if (!errors.isEmpty()) {
-            return res.status(400).json({
-                error: 'Validation failed',
-                details: errors.array()
-            });
-        }
-
-        const user = req.user;
-        const note = await Note.findOne({ _id: req.params.id, user: user._id });
-
-        if (!note) {
-            return res.status(404).json({ error: 'Note not found' });
-        }
-
-        note.isPinned = !note.isPinned;
-        await note.save();
-
-        res.json({
-            message: `Note ${note.isPinned ? 'pinned' : 'unpinned'} successfully`,
-            note
-        });
-    } catch (error) {
-        console.error('Error toggling pin status:', error);
-        res.status(500).json({ error: 'Internal server error' });
-    }
-});
-
 // Get notes statistics
 router.get('/stats/summary', authenticate, async (req: any, res: any) => {
     try {
         const user = req.user;
 
         const totalNotes = await Note.countDocuments({ user: user._id });
-        const pinnedNotes = await Note.countDocuments({ user: user._id, isPinned: true });
 
         // Get tags distribution
         const tagsAggregation = await Note.aggregate([
@@ -244,7 +204,6 @@ router.get('/stats/summary', authenticate, async (req: any, res: any) => {
 
         res.json({
             totalNotes,
-            pinnedNotes,
             tags
         });
     } catch (error) {

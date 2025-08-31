@@ -8,7 +8,6 @@ interface Note {
     title: string
     content: string
     createdAt: string
-    isPinned: boolean
 }
 
 const Dashboard = () => {
