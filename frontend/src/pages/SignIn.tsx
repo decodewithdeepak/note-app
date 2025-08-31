@@ -123,14 +123,14 @@ const SignIn = () => {
                     </div>
 
                     <div className="text-center mt-4">
-                        <span className="text-gray-500 text-xs">Don't have an account? </span>
+                        <span className="text-gray-500 text-xs">Don't have an account?? </span>
                         <Link to="/signup" className="text-blue-600 hover:text-blue-700 font-semibold text-xs underline">Sign up</Link>
                     </div>
                 </div>
             </div>
 
             <div className="hidden lg:flex flex-1 relative items-center justify-center p-12 bg-gray-50">
-                <img src="/right-column.png" alt="Abstract design" className="max-w-md max-h-[500px] object-cover rounded-2xl shadow-lg" />
+                <img src="/right-column.png" alt="Abstract design" className="max-w-md object-cover rounded-2xl shadow-lg" />
             </div>
         </div>
     )
