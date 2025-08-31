@@ -84,7 +84,7 @@ export const notesAPI = {
         return data.note || data;
     },
 
-    updateNote: async (token: string, id: string, note: { title: string; content: string; isPinned?: boolean }) => {
+    updateNote: async (token: string, id: string, note: { title: string; content: string }) => {
         const response = await fetch(`${API_BASE}/notes/${id}`, {
             method: 'PUT',
             headers: {
