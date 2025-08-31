@@ -8,12 +8,13 @@ import passport from 'passport';
 import dotenv from 'dotenv';
 import path from 'path';
 
+// Load environment variables FIRST
+dotenv.config();
+
 import authRoutes from './routes/auth';
 import noteRoutes from './routes/notes';
 import { errorHandler } from './middleware/errorHandler';
 import './config/passport';
-
-dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
