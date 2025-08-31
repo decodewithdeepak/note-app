@@ -15,8 +15,16 @@ const Dashboard = () => {
     const [notes, setNotes] = useState<Note[]>([
         {
             id: '1',
-            title: 'Welcome to your notes',
+            title: 'Note 1',
             content: 'This is your first note. You can create, edit, and delete notes here.',
+            createdAt: new Date().toISOString(),
+            isPinned: false,
+            backgroundColor: '#ffffff'
+        },
+        {
+            id: '2',
+            title: 'Note 2',
+            content: 'Another note for testing purposes.',
             createdAt: new Date().toISOString(),
             isPinned: false,
             backgroundColor: '#ffffff'
@@ -29,11 +37,11 @@ const Dashboard = () => {
         content: ''
     })
 
-    // Mock user data
+    // Mock user data - matching the image
     const user = {
-        name: 'John Doe',
-        email: 'john@example.com',
-        avatar: 'JD'
+        name: 'Jonas Kahnwald',
+        email: 'xxxxxx@xxxx.com',
+        avatar: 'JK'
     }
 
     const handleLogout = () => {
@@ -90,16 +98,28 @@ const Dashboard = () => {
 
     return (
         <div className="min-h-screen bg-gray-50">
-            {/* Header */}
+            {/* Header - Mobile First */}
             <header className="bg-white border-b border-gray-200">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div className="px-4 sm:px-6 lg:px-8">
                     <div className="flex justify-between items-center h-16">
+                        {/* Left side - Logo and title */}
                         <div className="flex items-center">
                             <img src="/icon.png" alt="Logo" className="w-8 h-8 mr-3" />
-                            <h1 className="text-xl font-semibold text-gray-900">Notes</h1>
+                            <h1 className="text-xl font-semibold text-gray-900">Dashboard</h1>
                         </div>
 
-                        <div className="flex items-center space-x-4">
+                        {/* Right side - Sign out (mobile) */}
+                        <div className="block sm:hidden">
+                            <button
+                                onClick={handleLogout}
+                                className="text-blue-600 text-sm font-medium"
+                            >
+                                Sign Out
+                            </button>
+                        </div>
+
+                        {/* Right side - Full user info (desktop) */}
+                        <div className="hidden sm:flex items-center space-x-4">
                             <button
                                 onClick={handleCreateNote}
                                 className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition duration-200"
@@ -130,13 +150,29 @@ const Dashboard = () => {
             </header>
 
             {/* Main Content */}
-            <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                <div className="mb-6">
-                    <h2 className="text-2xl font-bold text-gray-900">Welcome back, {user.name.split(' ')[0]}!</h2>
-                    <p className="text-gray-600">You have {notes.length} note{notes.length !== 1 ? 's' : ''}</p>
+            <main className="px-4 sm:px-6 lg:px-8 py-6 max-w-7xl mx-auto">
+                {/* Welcome Section - Mobile optimized */}
+                <div className="mb-6 bg-white rounded-xl p-6 shadow-sm">
+                    <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">
+                        Welcome, {user.name}!
+                    </h2>
+                    <p className="text-gray-600 mb-4">Email: {user.email}</p>
+                    
+                    {/* Mobile Create Note Button */}
+                    <button
+                        onClick={handleCreateNote}
+                        className="w-full sm:hidden bg-blue-600 text-white py-3 rounded-lg font-medium hover:bg-blue-700 transition duration-200"
+                    >
+                        Create Note
+                    </button>
                 </div>
 
-                {/* Notes Grid */}
+                {/* Notes Section */}
+                <div className="mb-4">
+                    <h3 className="text-lg font-semibold text-gray-900 mb-4">Notes</h3>
+                </div>
+
+                {/* Notes List - Mobile First Design */}
                 {notes.length === 0 ? (
                     <div className="text-center py-12">
                         <div className="w-24 h-24 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
@@ -154,55 +190,85 @@ const Dashboard = () => {
                         </button>
                     </div>
                 ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                        {notes.map((note) => (
-                            <div
-                                key={note.id}
-                                className="bg-white rounded-lg border border-gray-200 p-4 hover:shadow-md transition duration-200 cursor-pointer"
-                                onClick={() => handleEditNote(note)}
-                            >
-                                <div className="flex justify-between items-start mb-3">
-                                    <h3 className="font-medium text-gray-900 truncate flex-1">{note.title}</h3>
-                                    <div className="flex space-x-1 ml-2">
-                                        <button
-                                            onClick={(e) => {
-                                                e.stopPropagation()
-                                                handlePinNote(note.id)
-                                            }}
-                                            className={`p-1 rounded ${note.isPinned ? 'text-yellow-500' : 'text-gray-400 hover:text-gray-600'}`}
-                                        >
-                                            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                                                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-8.293l-3-3a1 1 0 00-1.414 0l-3 3a1 1 0 001.414 1.414L9 9.414V13a1 1 0 102 0V9.414l1.293 1.293a1 1 0 001.414-1.414z" clipRule="evenodd" />
-                                            </svg>
-                                        </button>
-                                        <button
-                                            onClick={(e) => {
-                                                e.stopPropagation()
-                                                handleDeleteNote(note.id)
-                                            }}
-                                            className="p-1 rounded text-gray-400 hover:text-red-600"
-                                        >
-                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                            </svg>
-                                        </button>
+                    <>
+                        {/* Mobile List View */}
+                        <div className="sm:hidden space-y-3">
+                            {notes.map((note) => (
+                                <div
+                                    key={note.id}
+                                    className="bg-white rounded-lg p-4 shadow-sm border border-gray-200 flex items-center justify-between"
+                                    onClick={() => handleEditNote(note)}
+                                >
+                                    <div className="flex-1 cursor-pointer">
+                                        <h4 className="font-medium text-gray-900 mb-1">{note.title}</h4>
+                                        <p className="text-sm text-gray-500 line-clamp-2">{note.content}</p>
                                     </div>
+                                    <button
+                                        onClick={(e) => {
+                                            e.stopPropagation()
+                                            handleDeleteNote(note.id)
+                                        }}
+                                        className="ml-3 p-2 text-gray-400 hover:text-red-600 transition-colors"
+                                    >
+                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                        </svg>
+                                    </button>
                                 </div>
-                                <p className="text-gray-600 text-sm line-clamp-3 mb-3">{note.content}</p>
-                                <p className="text-xs text-gray-400">
-                                    {new Date(note.createdAt).toLocaleDateString()}
-                                </p>
-                            </div>
-                        ))}
-                    </div>
+                            ))}
+                        </div>
+
+                        {/* Desktop Grid View */}
+                        <div className="hidden sm:grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                            {notes.map((note) => (
+                                <div
+                                    key={note.id}
+                                    className="bg-white rounded-lg border border-gray-200 p-4 hover:shadow-md transition duration-200 cursor-pointer"
+                                    onClick={() => handleEditNote(note)}
+                                >
+                                    <div className="flex justify-between items-start mb-3">
+                                        <h3 className="font-medium text-gray-900 truncate flex-1">{note.title}</h3>
+                                        <div className="flex space-x-1 ml-2">
+                                            <button
+                                                onClick={(e) => {
+                                                    e.stopPropagation()
+                                                    handlePinNote(note.id)
+                                                }}
+                                                className={`p-1 rounded ${note.isPinned ? 'text-yellow-500' : 'text-gray-400 hover:text-gray-600'}`}
+                                            >
+                                                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-8.293l-3-3a1 1 0 00-1.414 0l-3 3a1 1 0 001.414 1.414L9 9.414V13a1 1 0 102 0V9.414l1.293 1.293a1 1 0 001.414-1.414z" clipRule="evenodd" />
+                                                </svg>
+                                            </button>
+                                            <button
+                                                onClick={(e) => {
+                                                    e.stopPropagation()
+                                                    handleDeleteNote(note.id)
+                                                }}
+                                                className="p-1 rounded text-gray-400 hover:text-red-600"
+                                            >
+                                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                </svg>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <p className="text-gray-600 text-sm line-clamp-3 mb-3">{note.content}</p>
+                                    <p className="text-xs text-gray-400">
+                                        {new Date(note.createdAt).toLocaleDateString()}
+                                    </p>
+                                </div>
+                            ))}
+                        </div>
+                    </>
                 )}
             </main>
 
-            {/* Note Modal */}
+            {/* Note Modal - Responsive */}
             {showNoteModal && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-                    <div className="bg-white rounded-lg w-full max-w-2xl max-h-[80vh] overflow-hidden">
-                        <div className="flex justify-between items-center p-6 border-b border-gray-200">
+                    <div className="bg-white rounded-lg w-full max-w-2xl max-h-[90vh] sm:max-h-[80vh] overflow-hidden">
+                        <div className="flex justify-between items-center p-4 sm:p-6 border-b border-gray-200">
                             <h3 className="text-lg font-medium text-gray-900">
                                 {editingNote ? 'Edit Note' : 'New Note'}
                             </h3>
@@ -216,7 +282,7 @@ const Dashboard = () => {
                             </button>
                         </div>
 
-                        <div className="p-6 space-y-4">
+                        <div className="p-4 sm:p-6 space-y-4 overflow-y-auto">
                             <div>
                                 <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-2">
                                     Title
@@ -226,7 +292,7 @@ const Dashboard = () => {
                                     type="text"
                                     value={noteForm.title}
                                     onChange={(e) => setNoteForm({ ...noteForm, title: e.target.value })}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-base"
                                     placeholder="Enter note title"
                                 />
                             </div>
@@ -237,25 +303,25 @@ const Dashboard = () => {
                                 </label>
                                 <textarea
                                     id="content"
-                                    rows={8}
+                                    rows={6}
                                     value={noteForm.content}
                                     onChange={(e) => setNoteForm({ ...noteForm, content: e.target.value })}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none text-base"
                                     placeholder="Enter note content"
                                 />
                             </div>
                         </div>
 
-                        <div className="flex justify-end space-x-3 p-6 border-t border-gray-200">
+                        <div className="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-3 p-4 sm:p-6 border-t border-gray-200">
                             <button
                                 onClick={() => setShowNoteModal(false)}
-                                className="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition duration-200"
+                                className="w-full sm:w-auto px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition duration-200"
                             >
                                 Cancel
                             </button>
                             <button
                                 onClick={handleSaveNote}
-                                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition duration-200"
+                                className="w-full sm:w-auto px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition duration-200"
                             >
                                 {editingNote ? 'Update' : 'Create'}
                             </button>
