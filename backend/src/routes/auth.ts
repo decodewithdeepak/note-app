@@ -36,6 +36,13 @@ const generateOTP = () => {
 
 // Send OTP email
 const sendOTPEmail = async (email: string, otp: string) => {
+    // In development mode, just log the OTP instead of sending email
+    if (process.env.NODE_ENV === 'development') {
+        console.log(`📧 [DEV MODE] OTP for ${email}: ${otp}`);
+        console.log('🔥 [DEV MODE] Use this OTP to verify your account');
+        return;
+    }
+
     const transporter = createTransporter();
 
     const mailOptions = {

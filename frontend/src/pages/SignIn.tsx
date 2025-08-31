@@ -1,46 +1,34 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { authAPI } from '../services/api'
+import { useAuth } from '../context/AuthContext'
 
 const SignIn = () => {
-    const [formData, setFormData] = useState({
-        email: '',
-        password: ''
-    })
+    const [formData, setFormData] = useState({ email: '', password: '' })
     const [showOTP, setShowOTP] = useState(false)
     const [otp, setOtp] = useState('')
     const navigate = useNavigate()
+    const { login } = useAuth()
 
-    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setFormData({
-            ...formData,
-            [e.target.name]: e.target.value
-        })
-    }
-
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => setFormData({ ...formData, [e.target.name]: e.target.value })
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
-        // Here you would handle the signin logic
-        // If email is not verified, show OTP screen
-        // setShowOTP(true)
-        // For now, navigate directly to dashboard
-        navigate('/dashboard')
+        try {
+            const result = await authAPI.login(formData)
+            if (result.token) {
+                login(result.token, result.user)
+                navigate('/dashboard')
+            }
+        } catch (error: any) {
+            alert(error.message || 'Login failed')
+        }
     }
-
-    const handleOTPSubmit = (e: React.FormEvent) => {
-        e.preventDefault()
-        // Handle OTP verification
-        navigate('/dashboard')
-    }
-
-    const handleGoogleSignin = () => {
-        // Handle Google signin
-        window.location.href = 'http://localhost:5000/api/auth/google'
-    }
+    const handleOTPSubmit = (e: React.FormEvent) => { e.preventDefault(); navigate('/dashboard') }
+    const handleGoogleSignin = () => window.location.href = 'http://localhost:5000/api/auth/google'
 
     if (showOTP) {
         return (
             <div className="min-h-screen flex">
-                {/* Left side - Form */}
                 <div className="flex-1 flex items-center justify-center p-6 bg-white">
                     <div className="w-full max-w-xs">
                         <div className="text-center mb-6">
@@ -48,46 +36,17 @@ const SignIn = () => {
                             <h2 className="text-lg font-semibold text-gray-900">Verify your email</h2>
                             <p className="text-gray-600 mt-1 text-xs">Please enter the OTP sent to your email</p>
                         </div>
-
                         <form onSubmit={handleOTPSubmit} className="space-y-4">
-                            <div>
-                                <input
-                                    id="otp"
-                                    type="text"
-                                    value={otp}
-                                    onChange={(e) => setOtp(e.target.value)}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-                                    placeholder="Enter OTP"
-                                    maxLength={6}
-                                />
-                            </div>
-
-                            <button
-                                type="submit"
-                                className="w-full bg-blue-600 text-white py-2 px-3 rounded-md hover:bg-blue-700 transition duration-200 font-medium text-sm"
-                            >
-                                Verify
-                            </button>
+                            <input id="otp" type="text" value={otp} onChange={(e) => setOtp(e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm" placeholder="Enter OTP" maxLength={6} />
+                            <button type="submit" className="w-full bg-blue-600 text-white py-2 px-3 rounded-md hover:bg-blue-700 transition font-medium text-sm">Verify</button>
                         </form>
-
                         <div className="text-center mt-4">
-                            <button
-                                onClick={() => setShowOTP(false)}
-                                className="text-blue-600 hover:text-blue-700 text-xs"
-                            >
-                                Back to sign in
-                            </button>
+                            <button onClick={() => setShowOTP(false)} className="text-blue-600 hover:text-blue-700 text-xs">Back to sign in</button>
                         </div>
                     </div>
                 </div>
-
-                {/* Right side - Image (Hidden on mobile, visible on lg+) */}
                 <div className="hidden lg:flex flex-1 relative">
-                    <img
-                        src="/right-column.png"
-                        alt="Abstract design"
-                        className="w-full h-full object-cover"
-                    />
+                    <img src="/right-column.png" alt="Abstract design" className="w-full h-full object-cover" />
                 </div>
             </div>
         )
@@ -95,107 +54,47 @@ const SignIn = () => {
 
     return (
         <div className="min-h-screen flex">
-            {/* Left side - Form */}
             <div className="flex-1 flex items-center justify-center p-6 bg-white">
                 <div className="w-full max-w-xs lg:max-w-sm">
-                    {/* HD Icon and Text - Left aligned */}
                     <div className="flex items-center mb-6">
                         <img src="/icon.png" alt="Logo" className="w-6 h-6 mr-2" />
                         <span className="text-gray-900 font-bold text-lg">HD</span>
                     </div>
 
-                    {/* Sign in title and subtitle - Left aligned */}
                     <div className="text-left mb-6">
                         <h2 className="text-xl font-bold text-gray-900 mb-1">Sign in</h2>
                         <p className="text-gray-500 text-xs">Welcome back! Please sign in to your account</p>
                     </div>
 
                     <form onSubmit={handleSubmit} className="space-y-4">
-                        {/* Email Field with Fixed Label that changes color on focus/hover */}
                         <div className="relative group">
-                            <label 
-                                htmlFor="email" 
-                                className="absolute left-3 -top-2 bg-white px-1 text-xs font-medium text-gray-500 z-10 transition-colors duration-200 group-focus-within:text-blue-600 group-hover:text-blue-600"
-                            >
-                                Email
-                            </label>
-                            <input
-                                id="email"
-                                name="email"
-                                type="email"
-                                value={formData.email}
-                                onChange={handleInputChange}
-                                className="w-full px-3 py-2 text-sm border-2 border-gray-300 rounded-lg focus:ring-0 focus:border-blue-500 hover:border-blue-500 focus:outline-none transition-colors duration-200"
-                                placeholder="Enter your email"
-                                required
-                            />
+                            <label htmlFor="email" className="absolute left-3 -top-2 bg-white px-1 text-xs font-medium text-gray-500 z-10 transition-colors group-focus-within:text-blue-600 group-hover:text-blue-600">Email</label>
+                            <input id="email" name="email" type="email" value={formData.email} onChange={handleInputChange} className="w-full px-3 py-2 text-sm border-2 border-gray-300 rounded-lg focus:ring-0 focus:border-blue-500 hover:border-blue-500 focus:outline-none transition-colors" placeholder="Enter your email" required />
                         </div>
 
-                        {/* Password Field with Fixed Label that changes color on focus/hover */}
                         <div className="relative group">
-                            <label 
-                                htmlFor="password" 
-                                className="absolute left-3 -top-2 bg-white px-1 text-xs font-medium text-gray-500 z-10 transition-colors duration-200 group-focus-within:text-blue-600 group-hover:text-blue-600"
-                            >
-                                Password
-                            </label>
-                            <input
-                                id="password"
-                                name="password"
-                                type="password"
-                                value={formData.password}
-                                onChange={handleInputChange}
-                                className="w-full px-3 py-2 text-sm border-2 border-gray-300 rounded-lg focus:ring-0 focus:border-blue-500 hover:border-blue-500 focus:outline-none transition-colors duration-200"
-                                placeholder="Enter your password"
-                                required
-                            />
+                            <label htmlFor="password" className="absolute left-3 -top-2 bg-white px-1 text-xs font-medium text-gray-500 z-10 transition-colors group-focus-within:text-blue-600 group-hover:text-blue-600">Password</label>
+                            <input id="password" name="password" type="password" value={formData.password} onChange={handleInputChange} className="w-full px-3 py-2 text-sm border-2 border-gray-300 rounded-lg focus:ring-0 focus:border-blue-500 hover:border-blue-500 focus:outline-none transition-colors" placeholder="Enter your password" required />
                         </div>
 
-                        {/* Remember me and Forgot password */}
                         <div className="flex items-center justify-between">
                             <div className="flex items-center">
-                                <input
-                                    id="remember-me"
-                                    name="remember-me"
-                                    type="checkbox"
-                                    className="h-3 w-3 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                                />
-                                <label htmlFor="remember-me" className="ml-2 block text-xs text-gray-900">
-                                    Remember me
-                                </label>
+                                <input id="remember-me" type="checkbox" className="h-3 w-3 text-blue-600 focus:ring-blue-500 border-gray-300 rounded" />
+                                <label htmlFor="remember-me" className="ml-2 text-xs text-gray-900">Remember me</label>
                             </div>
-
-                            <div className="text-xs">
-                                <a href="#" className="font-medium text-blue-600 hover:text-blue-500">
-                                    Forgot password?
-                                </a>
-                            </div>
+                            <a href="#" className="text-xs font-medium text-blue-600 hover:text-blue-500">Forgot password?</a>
                         </div>
 
-                        <div className="pt-1">
-                            <button
-                                type="submit"
-                                className="w-full bg-blue-600 text-white py-2 px-3 rounded-lg hover:bg-blue-700 transition duration-200 font-medium text-sm"
-                            >
-                                Sign in
-                            </button>
-                        </div>
+                        <button type="submit" className="w-full bg-blue-600 text-white py-2 px-3 rounded-lg hover:bg-blue-700 transition font-medium text-sm">Sign in</button>
                     </form>
 
                     <div className="mt-4">
                         <div className="relative">
-                            <div className="absolute inset-0 flex items-center">
-                                <div className="w-full border-t border-gray-300" />
-                            </div>
-                            <div className="relative flex justify-center text-xs">
-                                <span className="px-2 bg-white text-gray-500">Or continue with</span>
-                            </div>
+                            <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-gray-300" /></div>
+                            <div className="relative flex justify-center text-xs"><span className="px-2 bg-white text-gray-500">Or continue with</span></div>
                         </div>
 
-                        <button
-                            onClick={handleGoogleSignin}
-                            className="mt-3 w-full flex items-center justify-center px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition duration-200 text-xs"
-                        >
+                        <button onClick={handleGoogleSignin} className="mt-3 w-full flex items-center justify-center px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition text-xs">
                             <svg className="w-4 h-4 mr-1" viewBox="0 0 24 24">
                                 <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
                                 <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
@@ -208,20 +107,13 @@ const SignIn = () => {
 
                     <div className="text-center mt-4">
                         <span className="text-gray-500 text-xs">Don't have an account? </span>
-                        <Link to="/signup" className="text-blue-600 hover:text-blue-700 font-semibold text-xs underline">
-                            Sign up
-                        </Link>
+                        <Link to="/signup" className="text-blue-600 hover:text-blue-700 font-semibold text-xs underline">Sign up</Link>
                     </div>
                 </div>
             </div>
 
-            {/* Right side - Image (Hidden on mobile, visible on lg+ screens) */}
             <div className="hidden lg:flex flex-1 relative items-center justify-center p-12 bg-gray-50">
-                <img
-                    src="/right-column.png"
-                    alt="Abstract design"
-                    className="max-w-md max-h-[500px] object-cover rounded-2xl shadow-lg"
-                />
+                <img src="/right-column.png" alt="Abstract design" className="max-w-md max-h-[500px] object-cover rounded-2xl shadow-lg" />
             </div>
         </div>
     )

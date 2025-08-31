@@ -8,7 +8,7 @@ import passport from 'passport';
 import dotenv from 'dotenv';
 
 import authRoutes from './routes/auth';
-// import noteRoutes from './routes/notes';
+import noteRoutes from './routes/notes';
 import { errorHandler } from './middleware/errorHandler';
 import './config/passport';
 
@@ -51,7 +51,7 @@ app.use(passport.session());
 
 // Routes
 app.use('/api/auth', authRoutes);
-// app.use('/api/notes', noteRoutes);
+app.use('/api/notes', noteRoutes);
 
 // Health check
 app.get('/health', (req, res) => {
