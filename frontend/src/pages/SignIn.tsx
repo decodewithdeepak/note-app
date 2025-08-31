@@ -25,7 +25,10 @@ const SignIn = () => {
         }
     }
     const handleOTPSubmit = (e: React.FormEvent) => { e.preventDefault(); navigate('/dashboard') }
-    const handleGoogleSignin = () => window.location.href = 'http://localhost:5000/api/auth/google'
+    const handleGoogleSignin = () => {
+        const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000'
+        window.location.href = `${apiUrl}/api/auth/google`
+    }
 
     if (showOTP) {
         return (
