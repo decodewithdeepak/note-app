@@ -57,19 +57,6 @@ const Dashboard = () => {
         }
     }
 
-    const handlePinNote = async (id: string) => {
-        try {
-            const token = localStorage.getItem('token')
-            const note = notes.find(n => n._id === id)
-            if (token && note) {
-                const updated = await notesAPI.updateNote(token, id, { title: note.title, content: note.content, isPinned: !note.isPinned })
-                setNotes(notes.map(note => note._id === id ? updated : note))
-            }
-        } catch (error) {
-            console.error('Failed to pin note:', error)
-        }
-    }
-
     const handleSaveNote = async () => {
         try {
             const token = localStorage.getItem('token')
@@ -152,11 +139,6 @@ const Dashboard = () => {
                                 <div className="flex justify-between items-start mb-3">
                                     <h3 className="font-medium text-gray-900 truncate flex-1">{note.title}</h3>
                                     <div className="flex space-x-1 ml-2">
-                                        <button onClick={(e) => { e.stopPropagation(); handlePinNote(note._id) }} className={`p-1 rounded ${note.isPinned ? 'text-yellow-500' : 'text-gray-400 hover:text-gray-600'}`}>
-                                            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                                                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-8.293l-3-3a1 1 0 00-1.414 0l-3 3a1 1 0 001.414 1.414L9 9.414V13a1 1 0 102 0V9.414l1.293 1.293a1 1 0 001.414-1.414z" clipRule="evenodd" />
-                                            </svg>
-                                        </button>
                                         <button onClick={(e) => { e.stopPropagation(); handleDeleteNote(note._id) }} className="p-1 rounded text-gray-400 hover:text-red-600">
                                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
